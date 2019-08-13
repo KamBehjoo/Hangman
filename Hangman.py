@@ -1,4 +1,6 @@
 import random
+import requests
+from bs4 import BeautifulSoup
 
 
 def find_occurrences(ch):
@@ -28,7 +30,6 @@ def print_progress():
     # Wrong Letters: x y g
     # Tries Left: 5
     #########################
-    print("\n")
     print("Word: ", end=" ")
     print_letter_spaces()
     print("Wrong Letters: ", end=" ")
@@ -40,13 +41,31 @@ def print_progress():
 ####################################
 # MAIN
 
-triesLeft = 10
+# get the word of the day
+url = 'https://www.merriam-webster.com/word-of-the-day'
+response = requests.get(url)
+soup = BeautifulSoup(response.text, "html.parser")
+wordOfTheDay = soup.find_all("h1")[0].get_text()
 
-# list of words
-words = ["pulverize", "borderland", "dissociative", "literature"]
+# random word
+localWords = ["pulverize", "borderland", "dissociative", "literature"]
+randomLocalWord = localWords[random.randint(0,len(localWords)-1)]
 
-# pick a word
-word = words[random.randint(0,len(words)-1)]
+# random word or Word of the Day
+words = [wordOfTheDay, randomLocalWord]
+word = ""
+
+while True:
+    onlineOrLocal = input("(a) Word of the Day\n"
+                      "(b) Random Word")
+    if onlineOrLocal == 'a':
+        word = wordOfTheDay
+        break
+    elif onlineOrLocal == 'b':
+        word = randomLocalWord
+        break
+    else:
+        print("Not a valid selection.\n")
 
 # set up arrays
 wordLetters = []
@@ -54,14 +73,19 @@ wrongLetters = []
 for x in range(len(word)):
     wordLetters.append('_')
 
+# of tries
+triesLeft = 10
+
 
 while True:
     print_progress()
     letter = input("Guess: ")
+    print('\n')
 
     # check if letter has been guessed already
     if wordLetters.count(letter) > 0 or wrongLetters.count(letter) > 0:
         print("\nLETTER HAS BEEN GUESSED")
+        continue
 
     # check if letter is in the word
     if word.find(letter) < 0:
